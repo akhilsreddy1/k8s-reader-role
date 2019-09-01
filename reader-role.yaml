@@ -1,0 +1,130 @@
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-reader
+  namespace: @namespace
+  
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-reader-role
+  labels:
+    app: cluster-reader-role
+rules:  
+- apiGroups: [""]  
+  resources:
+  - componentstatuses
+  - configmaps
+  - endpoints
+  - events
+  - limitranges
+  - namespaces
+  - nodes
+  - nodes/proxy
+  - persistentvolumeclaims
+  - persistentvolumes
+  - persistentvolumeclaims/status
+  - persistentvolumes/status
+  - pods
+  - pods/log
+  - pods/status
+  - replicationcontrollers
+  - replicationcontrollers/status
+  - replicationcontrollers/scale
+  - resourcequotas
+  - serviceaccounts
+  - services
+  - services/proxy
+  - services/status
+  - priorityclasses
+  verbs: ["get", "watch", "list"]  
+
+- apiGroups: ["extensions", "apps"]
+  resources:
+  - daemonsets
+  - deployments
+  - deployments/status
+  - deployments/scale
+  - daemonsets/status
+  - replicasets
+  - replicasets/status
+  - replicasets/scale
+  - statefulsets
+  - statefulsets/status
+  - statefulsets/scale
+  - ingresses
+  - ingresses/status
+  verbs: ["get", "watch", "list"]  
+
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  - horizontalpodautoscalers/status
+  verbs: ["get", "watch", "list"] 
+
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  - cronjobs/status
+  - jobs
+  - jobs/status
+  verbs: ["get", "watch", "list"] 
+
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  - ingresses
+  - ingresses/status
+  verbs: ["get", "watch", "list"]  
+
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  - volumeattachments 
+  verbs: ["get", "watch", "list"]  
+
+- apiGroups:
+  - policy
+  resources:
+  - podsecuritypolicies
+  - poddisruptionbudgets
+  - poddisruptionbudgets/status
+  verbs: ["get", "watch", "list"]  
+
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list", "watch"]
+
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - '*'
+# metrics or health URL's
+- nonResourceURLs: ["*"]
+  verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: reader-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-reader-role
+subjects:
+#- kind: User
+#  name: janedoe@example.com
+- kind: ServiceAccount
+  name: cluster-reader
+  namespace: @namespace
